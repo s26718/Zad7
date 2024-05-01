@@ -1,3 +1,4 @@
+using System.Data.SqlClient;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Zad7.Exceptions;
@@ -52,6 +53,35 @@ public class WarehouseController : ControllerBase
             return StatusCode(400, "order already fulfilled");
         }
         
+
+        return Ok(productWarehouseId);
+    }
+    [HttpPost("zad2")]
+    public async Task<IActionResult> FulfillOrderWithProcedureAsync(RequestDTO requestDto)
+    {
+        int? productWarehouseId = null;
+        (int idProduct, int idWarehouse, int amount, DateTime requestDateTime) = requestDto;
+        try
+        {
+            productWarehouseId =
+                await _warehouseService.FulfillOrderWithProcedureAsync(idWarehouse, idProduct, amount, requestDateTime);
+        }
+        catch (SqlException exc)
+        {
+            switch (exc.State)
+            {
+                case 1:
+                    return StatusCode(404, "No such product exists");
+                    break;
+                case 2:
+                    return StatusCode(404, "no matching order found");
+                    break;
+                case 3:
+                    return StatusCode(404, "No such warehouse exists");
+                    break;
+            }
+        }
+
 
         return Ok(productWarehouseId);
     }

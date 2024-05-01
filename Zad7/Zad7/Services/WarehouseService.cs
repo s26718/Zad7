@@ -12,6 +12,11 @@ public class WarehouseService : IWarehouseService
     {
         _warehouseRepository = warehouseRepository;
     }
+
+    public async Task<int> FulfillOrderWithProcedureAsync(int idWarehouse, int idProduct, int amount, DateTime requestDateTime)
+    {
+        return await _warehouseRepository.FulfillOrderWithProcedureAsync(idWarehouse, idProduct, amount, requestDateTime);
+    }
     
 
 

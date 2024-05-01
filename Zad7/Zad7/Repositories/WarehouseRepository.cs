@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using Zad7.Models;
@@ -233,6 +234,31 @@ public class WarehouseRepository : IWarehouseRepository
         tran.Commit();
 
         return insertedRecordId;
+    }
+    public async Task<int> FulfillOrderWithProcedureAsync(int idWarehouse, int idProduct, int amount, DateTime requestDateTime)
+    {
+        int result = -1;
+        using var con = new SqlConnection(_configuration["ConnectionStrings:DefaultConnection"]);
+        
+        using var cmd = new SqlCommand("AddProductToWarehouse", con)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        cmd.Parameters.AddWithValue("@IdProduct", idProduct);
+        cmd.Parameters.AddWithValue("@IdWarehouse", idWarehouse);
+        cmd.Parameters.AddWithValue("@Amount", amount);
+        cmd.Parameters.AddWithValue("@CreatedAt", requestDateTime);
+        
+        await con.OpenAsync();
+        using (var dr = await cmd.ExecuteReaderAsync())
+        {
+            while (await dr.ReadAsync())
+            {
+                result = Int32.Parse(dr["NewId"].ToString());
+            }
+        }
+
+        return result;
     }
 
     public async Task<bool> CheckIfProductWarehouseExists(int idOrder)
